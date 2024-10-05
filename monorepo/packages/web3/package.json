@@ -1,0 +1,30 @@
+{
+  "name": "@repo/web3",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "exports": {
+    "./generated": {
+      "types": "./src/generated.ts",
+      "default": "./dist/generated.js"
+    },
+    "./contracts": {
+      "types": "./src/contracts.ts",
+      "default": "./dist/contracts.js"
+    }
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "viem": "^2.21.16"
+  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

@@ -12,8 +12,27 @@ import { useAccount, useClient, useConnect, useDisconnect, usePublicClient, useS
 import { tradeFactoryAbi, tradeAbi   } from "@/generated"
 import { parseEther } from "viem"
 import Chart from "./chart"
-import { UTCTimestamp } from "lightweight-charts"
+import { SeriesMarker, Time, UTCTimestamp } from "lightweight-charts"
 import { useRouter } from "next/navigation"
+import { FhenixClient } from 'fhenixjs';
+import { BrowserProvider } from 'ethers';
+
+
+export interface SupportedProvider {
+  request?(args: { method: string; params?: unknown[] }): Promise<unknown>;
+  send?(method: string, params?: unknown[]): Promise<unknown>;
+  getSigner?(): unknown;
+  getSigner?(addressOrIndex?: string | number): Promise<unknown>;
+}
+
+const provider = new BrowserProvider(window.ethereum);
+const fhenixClient = new FhenixClient({provider:{
+  request: window.ethereum.request,
+  getSigner: window.ethereum.send("eth_requestAccounts", []),
+}});
+
+
+
 
 // Mock data for the chart (now with multiple assets)
 const chartData: { [key: string]: { name: string; price: number }[] } = {
@@ -124,7 +143,7 @@ export default function TradingView() {
   const walletClient = useWalletClient()
   const [side, setSide] = useState("buy")
   const [selectedPair, setSelectedPair] = useState("BTC/USD")
-  const [markers, setMarkers] = useState([])
+  const [markers, setMarkers] = useState<SeriesMarker<Time>[]>([])
   const account = useAccount()
   const { connectors, connect, status, error } = useConnect()
   const { disconnect } = useDisconnect()
@@ -162,6 +181,11 @@ export default function TradingView() {
     } else {
       router.push('/')
     }
+
+    const _markers = markers
+    const _localMarkers = localStorage.getItem("markers")
+    _markers.push(!!_localMarkers ? JSON.parse(_localMarkers) : [])
+    setMarkers(_markers)
   }, [])
 
   useWatchContractEvent({
@@ -171,7 +195,16 @@ export default function TradingView() {
     syncConnectedChain:true,
     onLogs(logs) {
       logs.forEach((log) => {
-        setTick({time: new Date().valueOf()/1000 as UTCTimestamp, value: log.args.price!!})
+        const time = new Date().valueOf()/1000 as UTCTimestamp;
+        setTick({time, value: log.args.price!!})
+        const _markers = markers
+        _markers.push({
+          time,
+          position: side === "Buy" ? 'belowBar' : "aboveBar",
+          color: side === "Buy" ? 'green' : "red",
+          shape: 'circle',
+        });
+        setMarkers(_markers)
         console.log('New Tick!', log)
       })
     },
@@ -198,14 +231,12 @@ export default function TradingView() {
   }); 
 
   const marketOrder = async () => {
-    const _markers = markers
-    _markers.push({
-      time: new Date().valueOf()/1000 as UTCTimestamp,
-      position: side === "Buy" ? 'belowBar' : "aboveBar",
-      color: side === "Buy" ? 'green' : "red",
-      shape: 'circle',
-    } as SeriesMarker<Time>) ;
-    setMarkers(_markers)
+    // writeContract({
+    //   abi:tradeAbi,
+    //   address: tradeAddress!!,
+    //   functionName: 'addTrade',
+    //   args: ["EUR_USD", 22],
+    // }); 
 
   }
 
@@ -273,7 +304,7 @@ export default function TradingView() {
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 p-4 flex flex-col">
           <div className="flex-1 h-full">
-            <Chart tick={tick} ticks={ticks} />
+            <Chart tick={tick} ticks={ticks} markers={markers} />
             {/* <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData[selectedPair]}>
                 <XAxis dataKey="name" />

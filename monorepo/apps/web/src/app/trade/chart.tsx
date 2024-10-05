@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, LineData, Time, WhitespaceData, DeepPartial, LineSeriesOptions, SeriesOptionsCommon, LineStyleOptions, UTCTimestamp } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, LineData, Time, WhitespaceData, DeepPartial, LineSeriesOptions, SeriesOptionsCommon, LineStyleOptions, UTCTimestamp, SeriesMarker } from 'lightweight-charts';
 
 interface ChartProps {
   tick: { time: UTCTimestamp; value: number }|undefined;
   ticks: { time: UTCTimestamp; value: number }[];
+  markers: SeriesMarker<Time>[];
 
 }
 
 type L = ISeriesApi<"Line", Time, LineData<Time> | WhitespaceData<Time>, LineSeriesOptions, DeepPartial<LineStyleOptions & SeriesOptionsCommon>>;
 
-const Chart: React.FC<ChartProps> = ({ tick,ticks }) => {
+const Chart: React.FC<ChartProps> = ({ tick,ticks, markers }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [c, setC] = useState<IChartApi|undefined>(undefined);
   const [s, setS] = useState<L|undefined>(undefined);
@@ -53,6 +54,8 @@ const Chart: React.FC<ChartProps> = ({ tick,ticks }) => {
   useEffect(() => {
     if (!!c && !!s && !!tick) {
       s.update(tick)
+    
+      s.setMarkers
     }
   }, [c,s,tick]);
 

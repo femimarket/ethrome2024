@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation"
 import { BrowserProvider, JsonRpcProvider } from 'ethers';
 import { FheMath } from "@/lib/utils"
 import {EncryptionTypes, FhenixClient} from "fhenixjs"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 
 export interface SupportedProvider {
@@ -27,7 +28,11 @@ export interface SupportedProvider {
 }
 
 
-
+interface Trade {
+  price: number;
+  dt: number;
+  qty: number;
+}
 
 
 
@@ -129,6 +134,7 @@ export default function TradingView() {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [tick, setTick] = useState<{ time: UTCTimestamp; value: number }|undefined>(undefined);
   const [ticks, setTicks] = useState<{ time: UTCTimestamp; value: number }[]>([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [time, setTime] = useState<UTCTimestamp|undefined>(undefined);
   const [pendingTrade, setPendingTrade] = useState<boolean>(false);
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
@@ -140,19 +146,18 @@ export default function TradingView() {
     setSelectedPair(newPair)
   }
 
-const eurUsdTradingHistory = markers.map((marker) => {
-  const tick = ticks.find((tick) => tick.time === marker.time)
-  return ({
-    time: new Date(tick!!.time * 1000).toLocaleTimeString(),
+const eurUsdTradingHistory = trades.map((trade) => {
+  const tick = ticks.find((tick) => tick.time === trade.dt)
+  const _trade = {
+    dt: trade.dt,
     price: tick!!.value,
-    amount: 0.5,
-    type: marker.position === "aboveBar" ? "sell" : "buy"
-  })
+    qty: trade.qty
+  }
+  return _trade
 })
-  const tradingHistoryData: { [key: string]: { time: string; price: number; amount: number; type: string }[] } = {
+  const tradingHistoryData: { [key: string]: Trade[] } = {
     "EUR_USD": eurUsdTradingHistory,
   }
-
 
 
   useEffect(() => {
@@ -163,28 +168,27 @@ const eurUsdTradingHistory = markers.map((marker) => {
       router.push('/')
     }
 
-    const _markers = markers
+    const _localTrades = localStorage.getItem("trades")
+    const _trades = !!_localTrades ? JSON.parse(_localTrades) : [];
+    if (_trades.length > 0 ) {
+      setTrades(_trades)
+      localStorage.setItem("trades", JSON.stringify(_trades))
+    }
+
     const _localMarkers = localStorage.getItem("markers")
-    const hmm = !!_localMarkers ? JSON.parse(_localMarkers) : [];
-    if (hmm.length > 0 ) {
-      setMarkers(hmm)
-      localStorage.setItem("markers", JSON.stringify(hmm))
+    const _markers = !!_localMarkers ? JSON.parse(_localMarkers) : [];
+    if (_markers.length > 0 ) {
+      setMarkers(_markers)
+      localStorage.setItem("markers", JSON.stringify(_markers))
     }
 
 
-   
-
-    const _ticks = localStorage.getItem("ticks")
-    let hmmTicks = !!_ticks ? JSON.parse(_ticks) : [];
-    console.log("hmmTicks", hmmTicks)
-
-
-    if (hmmTicks.length > 0) {
-      console.log("what the hell", hmmTicks)
-      setTicks(hmmTicks)
+    const _localTicks = localStorage.getItem("ticks")
+    let _ticks = !!_localTicks ? JSON.parse(_localTicks) : [];
+    if (_ticks.length > 0) {
+      setTicks(_ticks)
     } else {
-      console.log("setting ticks123")
-      hmmTicks = [
+      _ticks = [
         { time: new Date('2023-01-01').valueOf()/1000 as UTCTimestamp, value: 1251 },
         { time: new Date('2023-01-02').valueOf()/1000 as UTCTimestamp, value: 1111 },
         { time: new Date('2023-01-03').valueOf()/1000 as UTCTimestamp, value: 1702 },
@@ -196,8 +200,8 @@ const eurUsdTradingHistory = markers.map((marker) => {
         { time: new Date('2023-01-09').valueOf()/1000 as UTCTimestamp, value: 1268 },
         { time: new Date('2023-01-10').valueOf()/1000 as UTCTimestamp, value: 1267 },
       ];
-      setTicks(hmmTicks)
-      localStorage.setItem("ticks", JSON.stringify(hmmTicks))
+      setTicks(_ticks)
+      localStorage.setItem("ticks", JSON.stringify(_ticks))
     }
 
   }, [])
@@ -216,10 +220,22 @@ const eurUsdTradingHistory = markers.map((marker) => {
         color: side === "buy" ? 'green' : "red",
         shape: side === "buy" ? 'arrowUp' : "arrowDown",
       });
+      
       console.log("markers", _markers, side)
       setMarkers(_markers)
       localStorage.setItem("markers", JSON.stringify(_markers))
       setTime(undefined)
+
+      const _trades = trades
+      _trades.push({
+        dt:time!!,
+        price: tick!!.value,
+        qty,
+      });
+      setTrades(_trades)
+      localStorage.setItem("trades", JSON.stringify(_trades))
+
+      setQty(0);
     }
   }, [pendingTrade, time])
 
@@ -246,6 +262,7 @@ const eurUsdTradingHistory = markers.map((marker) => {
         _ticks.push({time, value: Number(log.args.price!!)})
         localStorage.setItem("ticks", JSON.stringify(_ticks))
         setTime(time)
+        pl.refetch()
         console.log('New Tick!', log)
       })
     },
@@ -257,7 +274,7 @@ const eurUsdTradingHistory = markers.map((marker) => {
 
 
 
-  const ret = useReadContract({
+  const pl = useReadContract({
     abi:tradeAbi,
     address: tradeAddress as `0x${string}` | undefined,
     functionName: 'getPl',
@@ -269,10 +286,10 @@ const eurUsdTradingHistory = markers.map((marker) => {
     setPendingTrade(true)
  
     // const { FhenixClient } = await (eval(`import('fhenixjs')`) as Promise<typeof import('fhenixjs')>);
-    // const provider = new BrowserProvider(window.ethereum);
+    const provider = new BrowserProvider(window.ethereum);
 
-// const fhenixClient = new FhenixClient({ provider });
-// let encrypted = await client.encrypt(5, EncryptionTypes.uint8);
+const fhenixClient = new FhenixClient({ provider });
+let encrypted = await fhenixClient.encrypt(5, EncryptionTypes.uint8);
 
 console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))])
     writeContract({
@@ -282,16 +299,10 @@ console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(F
       args: ["EUR_USD", BigInt(qty)],
     }); 
 
-    setQty(0);
   }
 
-  const getPl = async () => {
-    console.log("getPl")
-    await ret.refetch()
-    console.log(ret)
-  }
+  
 
-  console.log(ret)
 
 
 
@@ -348,11 +359,11 @@ console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(F
               <tbody>
                 {tradingHistoryData[selectedPair].map((trade, index) => (
                   <tr key={index} className="border-t">
-                    <td className="py-2">{trade.time}</td>
+                    <td className="py-2">{new Date(trade.dt * 1000).toLocaleTimeString()}</td>
                     <td className="py-2">{trade.price.toFixed(4)}</td>
-                    <td className="py-2">{trade.amount}</td>
-                    <td className={`py-2 ${trade.type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
-                      {trade.type.charAt(0).toUpperCase() + trade.type.slice(1)}
+                    <td className="py-2">{trade.qty}</td>
+                    <td className={`py-2 ${trade.qty > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {trade.qty > 0 ? "Buy" : "Sell"}
                     </td>
                   </tr>
                 ))}
@@ -362,27 +373,22 @@ console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(F
         </div>
         <div className="w-80 border-l p-4 flex flex-col">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold mb-2">Order Book</h2>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <h3 className="font-medium text-green-500">Bids</h3>
-                {orderBookData[selectedPair].bids.map((bid, index) => (
-                  <div key={index} className="flex justify-between">
-                    <span>{bid.price.toFixed(2)}</span>
-                    <span>{bid.amount.toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-              <div>
-                <h3 className="font-medium text-red-500">Asks</h3>
-                {orderBookData[selectedPair].asks.map((ask, index) => (
-                  <div key={index} className="flex justify-between">
-                    <span>{ask.price.toFixed(2)}</span>
-                    <span>{ask.amount.toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <h2 className="text-lg font-semibold mb-2">Performance</h2>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
+                {(pl.data || 0) >= 0 ? (
+                  <ArrowUpIcon className="h-4 w-4 text-green-500" />
+                ) : (
+                  <ArrowDownIcon className="h-4 w-4 text-red-500" />
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${(pl.data || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  ${Number(pl.data || 0).toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold mb-2">Place Order</h2>

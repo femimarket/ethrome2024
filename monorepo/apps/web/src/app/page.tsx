@@ -34,7 +34,7 @@ export default function TradingPlatform() {
   const { connectors, connect, status, error } = useConnect()
   const { data: hash, writeContract, error: writeError } = useWriteContract()
 
-  const factoryContractAddress = '0xAE18c5F9f497EDD2e1DD55dA4c97E474a2c79E5F'
+  const factoryContractAddress = '0x9F8A89f254179e3ce602869aBa821885083969A4'
 
 
   // Create the connector instance

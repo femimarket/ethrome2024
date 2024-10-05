@@ -6,7 +6,6 @@ import { console } from "forge-std/src/console.sol";
 import { Math } from "./Math.sol";
 
 contract Trade {
-    using Math for eint64;
 
     event NewTick(string asset, int64 price);
 
@@ -31,8 +30,8 @@ contract Trade {
         _;
     }
 
-    function getPl(string memory asset) public view returns (int32) {
-        return Math.toInt(trades[asset].pl);
+    function getPl(string memory asset) public view returns (int64) {
+        return trades[asset].pl;
     }
 
     

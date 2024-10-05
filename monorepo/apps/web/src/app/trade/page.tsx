@@ -64,7 +64,7 @@ const chartData: { [key: string]: { name: string; price: number }[] } = {
 
 // Mock data for the order book (now with multiple assets)
 const orderBookData: { [key: string]: { asks: { price: number; amount: number }[]; bids: { price: number; amount: number }[] } } = {
-  "BTC/USD": {
+  "EUR_USD": {
     asks: [
       { price: 34850, amount: 1.2 },
       { price: 34900, amount: 0.8 },
@@ -104,35 +104,14 @@ const orderBookData: { [key: string]: { asks: { price: number; amount: number }[
 
 // Mock current prices and changes
 const currentPrices: { [key: string]: { price: number; change: number } } = {
-  "BTC/USD": { price: 34825.00, change: 2.5 },
+  "EUR_USD": { price: 34825.00, change: 2.5 },
   "ETH/USD": { price: 2318.75, change: 1.8 },
   "XRP/USD": { price: 0.5345, change: -0.5 },
 }
 
-// Mock trading history data
-const tradingHistoryData: { [key: string]: { time: string; price: number; amount: number; type: string }[] } = {
-  "BTC/USD": [
-    { time: "14:30:15", price: 34825.00, amount: 0.5, type: "buy" },
-    { time: "14:29:58", price: 34820.50, amount: 0.3, type: "sell" },
-    { time: "14:29:30", price: 34822.75, amount: 0.7, type: "buy" },
-    { time: "14:28:45", price: 34818.25, amount: 0.2, type: "sell" },
-    { time: "14:28:15", price: 34819.50, amount: 0.4, type: "buy" },
-  ],
-  "ETH/USD": [
-    { time: "14:30:10", price: 2318.75, amount: 2.5, type: "buy" },
-    { time: "14:29:55", price: 2318.50, amount: 1.8, type: "sell" },
-    { time: "14:29:25", price: 2319.00, amount: 3.2, type: "buy" },
-    { time: "14:28:50", price: 2317.75, amount: 1.5, type: "sell" },
-    { time: "14:28:20", price: 2318.25, amount: 2.0, type: "buy" },
-  ],
-  "XRP/USD": [
-    { time: "14:30:05", price: 0.5345, amount: 5000, type: "sell" },
-    { time: "14:29:50", price: 0.5344, amount: 7500, type: "buy" },
-    { time: "14:29:20", price: 0.5346, amount: 6000, type: "sell" },
-    { time: "14:28:55", price: 0.5343, amount: 8000, type: "buy" },
-    { time: "14:28:25", price: 0.5345, amount: 5500, type: "sell" },
-  ],
-}
+
+
+
 
 export default function TradingView() {
   const [orderType, setOrderType] = useState("market")
@@ -140,7 +119,7 @@ export default function TradingView() {
   const walletClient = useWalletClient()
   const [side, setSide] = useState("buy")
   const [qty, setQty] = useState(0)
-  const [selectedPair, setSelectedPair] = useState("BTC/USD")
+  const [selectedPair, setSelectedPair] = useState("EUR_USD")
   const [markers, setMarkers] = useState<SeriesMarker<Time>[]>([])
   const account = useAccount()
   const { connectors, connect, status, error } = useConnect()
@@ -149,25 +128,29 @@ export default function TradingView() {
   const result = useSimulateContract()
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [tick, setTick] = useState<{ time: UTCTimestamp; value: number }|undefined>(undefined);
+  const [ticks, setTicks] = useState<{ time: UTCTimestamp; value: number }[]>([]);
   const [time, setTime] = useState<UTCTimestamp|undefined>(undefined);
+  const [pendingTrade, setPendingTrade] = useState<boolean>(false);
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
   const router = useRouter()
-  const ticks =  [
-    { time: new Date('2023-01-01').valueOf()/1000 as UTCTimestamp, value: 1251 },
-    { time: new Date('2023-01-02').valueOf()/1000 as UTCTimestamp, value: 1111 },
-    { time: new Date('2023-01-03').valueOf()/1000 as UTCTimestamp, value: 1702 },
-    { time: new Date('2023-01-04').valueOf()/1000 as UTCTimestamp, value: 1732 },
-    { time: new Date('2023-01-05').valueOf()/1000 as UTCTimestamp, value: 1517 },
-    { time: new Date('2023-01-06').valueOf()/1000 as UTCTimestamp, value: 1889 },
-    { time: new Date('2023-01-07').valueOf()/1000 as UTCTimestamp, value: 1546 },
-    { time: new Date('2023-01-08').valueOf()/1000 as UTCTimestamp, value: 1392 },
-    { time: new Date('2023-01-09').valueOf()/1000 as UTCTimestamp, value: 1268 },
-    { time: new Date('2023-01-10').valueOf()/1000 as UTCTimestamp, value: 1267 },
-  ];
+  
 
   // Handler for changing the trading pair
   const handlePairChange = (newPair: string) => {
     setSelectedPair(newPair)
+  }
+
+const eurUsdTradingHistory = markers.map((marker) => {
+  const tick = ticks.find((tick) => tick.time === marker.time)
+  return ({
+    time: new Date(tick!!.time * 1000).toLocaleTimeString(),
+    price: tick!!.value,
+    amount: 0.5,
+    type: marker.position === "aboveBar" ? "sell" : "buy"
+  })
+})
+  const tradingHistoryData: { [key: string]: { time: string; price: number; amount: number; type: string }[] } = {
+    "EUR_USD": eurUsdTradingHistory,
   }
 
 
@@ -182,19 +165,73 @@ export default function TradingView() {
 
     const _markers = markers
     const _localMarkers = localStorage.getItem("markers")
-    _markers.push(!!_localMarkers ? JSON.parse(_localMarkers) : [])
-    setMarkers(_markers)
+    const hmm = !!_localMarkers ? JSON.parse(_localMarkers) : [];
+    if (hmm.length > 0 ) {
+      setMarkers(hmm)
+      localStorage.setItem("markers", JSON.stringify(hmm))
+    }
+
+
+   
+
+    const _ticks = localStorage.getItem("ticks")
+    let hmmTicks = !!_ticks ? JSON.parse(_ticks) : [];
+    console.log("hmmTicks", hmmTicks)
+
+
+    if (hmmTicks.length > 0) {
+      console.log("what the hell", hmmTicks)
+      setTicks(hmmTicks)
+    } else {
+      console.log("setting ticks123")
+      hmmTicks = [
+        { time: new Date('2023-01-01').valueOf()/1000 as UTCTimestamp, value: 1251 },
+        { time: new Date('2023-01-02').valueOf()/1000 as UTCTimestamp, value: 1111 },
+        { time: new Date('2023-01-03').valueOf()/1000 as UTCTimestamp, value: 1702 },
+        { time: new Date('2023-01-04').valueOf()/1000 as UTCTimestamp, value: 1732 },
+        { time: new Date('2023-01-05').valueOf()/1000 as UTCTimestamp, value: 1517 },
+        { time: new Date('2023-01-06').valueOf()/1000 as UTCTimestamp, value: 1889 },
+        { time: new Date('2023-01-07').valueOf()/1000 as UTCTimestamp, value: 1546 },
+        { time: new Date('2023-01-08').valueOf()/1000 as UTCTimestamp, value: 1392 },
+        { time: new Date('2023-01-09').valueOf()/1000 as UTCTimestamp, value: 1268 },
+        { time: new Date('2023-01-10').valueOf()/1000 as UTCTimestamp, value: 1267 },
+      ];
+      setTicks(hmmTicks)
+      localStorage.setItem("ticks", JSON.stringify(hmmTicks))
+    }
+
   }, [])
 
 
+
+  console.log("ticks", ticks)
+
   useEffect(() => {
-    if (!!writeError) {
-      console.log("writeError", writeError);
-     const _markers = markers
-     _markers.pop();
-     setMarkers(_markers)
+    if (pendingTrade && !!time) {
+      setPendingTrade(false)
+      const _markers = markers
+      _markers.push({
+        time:time!!,
+        position: side === "buy" ? 'belowBar' : "aboveBar",
+        color: side === "buy" ? 'green' : "red",
+        shape: side === "buy" ? 'arrowUp' : "arrowDown",
+      });
+      console.log("markers", _markers, side)
+      setMarkers(_markers)
+      localStorage.setItem("markers", JSON.stringify(_markers))
+      setTime(undefined)
     }
-  }, [writeError])
+  }, [pendingTrade, time])
+
+
+  // useEffect(() => {
+  //   if (!!writeError) {
+  //     console.log("writeError", writeError);
+  //    const _markers = markers
+  //    _markers.pop();
+  //    setMarkers(_markers)
+  //   }
+  // }, [writeError])
 
   useWatchContractEvent({
     address: tradeAddress,
@@ -204,9 +241,11 @@ export default function TradingView() {
     onLogs(logs) {
       logs.forEach((log) => {
         const time = new Date().valueOf()/1000 as UTCTimestamp;
-        setTick({time, value: FheMath.toInt(log.args.price!!)})
+        setTick({time, value: Number(log.args.price!!)})
+        const _ticks = ticks
+        _ticks.push({time, value: Number(log.args.price!!)})
+        localStorage.setItem("ticks", JSON.stringify(_ticks))
         setTime(time)
-      
         console.log('New Tick!', log)
       })
     },
@@ -227,27 +266,20 @@ export default function TradingView() {
 
 
   const marketOrder = async () => {
-    console.log("marketOrder", FheMath.fromInt(111), FheMath.toInt(FheMath.fromInt(111)))
-    // const _markers = markers
-    // _markers.push({
-    //   time:time!!,
-    //   position: side === "Buy" ? 'belowBar' : "aboveBar",
-    //   color: side === "Buy" ? 'green' : "red",
-    //   shape: 'circle',
-    // });
-    // setMarkers(_markers)
+    setPendingTrade(true)
+ 
     // const { FhenixClient } = await (eval(`import('fhenixjs')`) as Promise<typeof import('fhenixjs')>);
-    const provider = new BrowserProvider(window.ethereum);
+    // const provider = new BrowserProvider(window.ethereum);
 
-const fhenixClient = new FhenixClient({ provider });
-let encrypted = await client.encrypt(5, EncryptionTypes.uint8);
+// const fhenixClient = new FhenixClient({ provider });
+// let encrypted = await client.encrypt(5, EncryptionTypes.uint8);
 
 console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))])
     writeContract({
       abi:tradeAbi,
       address: tradeAddress!!,
       functionName: 'addTrade',
-      args: ["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))],
+      args: ["EUR_USD", BigInt(qty)],
     }); 
 
     setQty(0);
@@ -267,31 +299,8 @@ console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(F
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
        
-       if (!!tradeAddress) {
-        <Button type="button" onClick={getPl}>
-        Get PL
-      </Button>
-       }
-      <>
-      <div>
-        <h2>Account</h2>
-
-        <div>
-          status: {account.status}
-          <br />
-          addresses: {JSON.stringify(account.addresses)}
-          <br />
-          chainId: {account.chainId}
-        </div>
-
-        {account.status === 'connected' && (
-          <button type="button" onClick={() => disconnect()}>
-            Disconnect
-          </button>
-        )}
-      </div>
-
-    </>
+    
+   
       <header className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-4">
           <Select value={selectedPair} onValueChange={handlePairChange}>
@@ -299,15 +308,13 @@ console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(F
               <SelectValue placeholder="Select trading pair" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="BTC/USD">BTC/USD</SelectItem>
-              <SelectItem value="ETH/USD">ETH/USD</SelectItem>
-              <SelectItem value="XRP/USD">XRP/USD</SelectItem>
+              <SelectItem value="EUR_USD">EUR_USD</SelectItem>
             </SelectContent>
           </Select>
           <h1 className="text-2xl font-bold">{selectedPair}</h1>
         </div>
         <div className="flex items-center space-x-4">
-          <span className="text-xl font-semibold">{currentPrices[selectedPair].price.toFixed(2)}</span>
+          <span className="text-xl font-semibold">{ (tick?.value?.toFixed(2)) || "..."}</span>
           <span className={`flex items-center ${currentPrices[selectedPair].change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
             {currentPrices[selectedPair].change >= 0 ? <ArrowUpIcon className="w-4 h-4 mr-1" /> : <ArrowDownIcon className="w-4 h-4 mr-1" />}
             {Math.abs(currentPrices[selectedPair].change)}%

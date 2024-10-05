@@ -54,10 +54,31 @@ const Chart: React.FC<ChartProps> = ({ tick,ticks, markers }) => {
   useEffect(() => {
     if (!!c && !!s && !!tick) {
       s.update(tick)
+
+      if (markers.length > 0) {
+        s.setMarkers(markers)
+      } 
     
-      s.setMarkers
     }
-  }, [c,s,tick]);
+    
+  }, [c,s,tick,markers]);
+
+  useEffect(() => {
+    if (!!s && markers.length > 0) {
+      console.log("markers", s.setMarkers,"bless", markers)
+      s.setMarkers(markers)
+    }
+    
+  }, [s,markers]);
+
+  useEffect(() => {
+    if (!!s && ticks.length > 0) {
+      ticks.forEach(tick => {
+        s.update(tick)
+      })
+    }
+    
+  }, [ticks]);
 
   return <div style={{ width: '100%', height: '100%' }} ref={chartContainerRef} />;
 };

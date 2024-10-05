@@ -88,7 +88,7 @@ function randomIntFromInterval(min: number, max: number) { // min and max includ
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const tradeFactoryAddress = '0xAE18c5F9f497EDD2e1DD55dA4c97E474a2c79E5F'
+const tradeFactoryAddress = '0x9F8A89f254179e3ce602869aBa821885083969A4'
 
 @Injectable()
 export class EthService {
@@ -157,7 +157,7 @@ export class EthService {
                 functionName: 'addPrice',
                 args: [
                     'EUR_USD',
-                    FheMath.fromInt(randomIntFromInterval(1000,2000)),
+                    BigInt(randomIntFromInterval(10000, 20000)),
                 ],
                 account: this.account,
                 chain: localFhenix

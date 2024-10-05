@@ -12,7 +12,7 @@ export const tradeAbi = [
     type: 'function',
     inputs: [
       { name: 'asset', internalType: 'string', type: 'string' },
-      { name: 'price', internalType: 'uint32', type: 'uint32' },
+      { name: 'price', internalType: 'int64', type: 'int64' },
     ],
     name: 'addPrice',
     outputs: [],
@@ -22,7 +22,7 @@ export const tradeAbi = [
     type: 'function',
     inputs: [
       { name: 'asset', internalType: 'string', type: 'string' },
-      { name: '_qty', internalType: 'uint32', type: 'uint32' },
+      { name: '_qty', internalType: 'int64', type: 'int64' },
     ],
     name: 'addTrade',
     outputs: [],
@@ -32,7 +32,7 @@ export const tradeAbi = [
     type: 'function',
     inputs: [{ name: 'asset', internalType: 'string', type: 'string' }],
     name: 'getPl',
-    outputs: [{ name: '', internalType: 'int32', type: 'int32' }],
+    outputs: [{ name: '', internalType: 'int64', type: 'int64' }],
     stateMutability: 'view',
   },
   {
@@ -47,10 +47,10 @@ export const tradeAbi = [
     inputs: [{ name: '', internalType: 'string', type: 'string' }],
     name: 'trades',
     outputs: [
-      { name: 'price', internalType: 'uint32', type: 'uint32' },
-      { name: 'qty', internalType: 'uint32', type: 'uint32' },
-      { name: 'entry', internalType: 'uint32', type: 'uint32' },
-      { name: 'pl', internalType: 'uint32', type: 'uint32' },
+      { name: 'price', internalType: 'int64', type: 'int64' },
+      { name: 'qty', internalType: 'int64', type: 'int64' },
+      { name: 'entry', internalType: 'int64', type: 'int64' },
+      { name: 'pl', internalType: 'int64', type: 'int64' },
       { name: 'timestamp', internalType: 'uint256', type: 'uint256' },
       { name: 'buy', internalType: 'ebool', type: 'uint256' },
       { name: 'init', internalType: 'bool', type: 'bool' },
@@ -62,7 +62,7 @@ export const tradeAbi = [
     anonymous: false,
     inputs: [
       { name: 'asset', internalType: 'string', type: 'string', indexed: false },
-      { name: 'price', internalType: 'uint32', type: 'uint32', indexed: false },
+      { name: 'price', internalType: 'int64', type: 'int64', indexed: false },
     ],
     name: 'NewTick',
   },

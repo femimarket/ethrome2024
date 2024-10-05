@@ -11,7 +11,67 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TradeAddress } from 'src/entity/trade.entity';
 import { Repository } from 'typeorm';
 import { FhenixClient, EncryptedUint8,  } from 'fhenixjs';
-import { providers } from 'ethers'
+import { JsonRpcProvider } from 'ethers'
+
+export class FheMath {
+    private static readonly OFFSET: number = 1 << 31;
+  
+    static fromInt(x: number): number {
+        return (x + FheMath.OFFSET) >>> 0;
+    }
+  
+    static toInt(x: number): number {
+        return (x - FheMath.OFFSET) | 0;
+    }
+  
+    static add(a: number, b: number): number {
+        return (a + b - FheMath.OFFSET) >>> 0;
+    }
+  
+    static sub(a: number, b: number): number {
+        return (a - b + FheMath.OFFSET) >>> 0;
+    }
+  
+    static negate(x: number): number {
+        return (2 * FheMath.OFFSET - x) >>> 0;
+    }
+  
+    static mul(a: number, b: number): number {
+        const isNegativeA = a < FheMath.OFFSET;
+        const isNegativeB = b < FheMath.OFFSET;
+        const isNegative = isNegativeA !== isNegativeB;
+  
+        const absA = isNegativeA ? FheMath.OFFSET - a : a - FheMath.OFFSET;
+        const absB = isNegativeB ? FheMath.OFFSET - b : b - FheMath.OFFSET;
+  
+        const absResult = Math.floor((absA * absB) / FheMath.OFFSET);
+        return (isNegative ? FheMath.OFFSET - absResult : FheMath.OFFSET + absResult) >>> 0;
+    }
+  
+    static div(a: number, b: number): number {
+        if (b === FheMath.OFFSET) {
+            throw new Error("Math: division by zero");
+        }
+  
+        const isNegativeA = a < FheMath.OFFSET;
+        const isNegativeB = b < FheMath.OFFSET;
+        const isNegative = isNegativeA !== isNegativeB;
+  
+        const absA = isNegativeA ? FheMath.OFFSET - a : a - FheMath.OFFSET;
+        const absB = isNegativeB ? FheMath.OFFSET - b : b - FheMath.OFFSET;
+  
+        const absResult = Math.floor((absA * FheMath.OFFSET) / absB);
+        return (isNegative ? FheMath.OFFSET - absResult : FheMath.OFFSET + absResult) >>> 0;
+    }
+  
+    static isNegative(x: number): boolean {
+        return x < FheMath.OFFSET;
+    }
+  
+    static abs(x: number): number {
+        return x < FheMath.OFFSET ? (2 * FheMath.OFFSET - x) >>> 0 : x;
+    }
+  }
 
 
 const localFhenix = {
@@ -28,7 +88,7 @@ function randomIntFromInterval(min: number, max: number) { // min and max includ
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const tradeFactoryAddress = '0x16293836D97B2836e8fcfdD4529c596ff5dC6581'
+const tradeFactoryAddress = '0xAE18c5F9f497EDD2e1DD55dA4c97E474a2c79E5F'
 
 @Injectable()
 export class EthService {
@@ -44,7 +104,7 @@ export class EthService {
     account = privateKeyToAccount(this.privateKey)
 
 // initialize Fhenix Client
-    const client = new FhenixClient({ provider:new JsonRpcProvider("http://localhost:8545") });
+    // client = new FhenixClient({ provider:new JsonRpcProvider("http://localhost:8547") });
 
 
     async watchContract() {
@@ -90,14 +150,14 @@ export class EthService {
 
 
         for await (const res of tradeAddresses.map(f => f.address as `0x${string}`).map(async (tradeAddress) => {
-            let result: EncryptedUint32 = await client.encrypt(number, EncryptionTypes.uint32);
+            // let result: EncryptedUint32 = await client.encrypt(number, EncryptionTypes.uint32);
             const result = await writeContract(config, {
                 abi: tradeAbi,
                 address: tradeAddress,
                 functionName: 'addPrice',
                 args: [
                     'EUR_USD',
-                    randomIntFromInterval(1000,2000),
+                    FheMath.fromInt(randomIntFromInterval(1000,2000)),
                 ],
                 account: this.account,
                 chain: localFhenix
@@ -105,6 +165,8 @@ export class EthService {
             const receipt = await waitForTransactionReceipt(config, {hash: result, chainId: localFhenix.id, })
             // console.log(receipt)
         }));
+
+        console.log(tradeAddresses.length, "tradeAddresses")
 
     }
 }

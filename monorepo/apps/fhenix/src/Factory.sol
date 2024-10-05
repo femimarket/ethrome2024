@@ -10,6 +10,7 @@ contract TradeFactory {
     uint256 public deploymentFee = 0.1 ether;
 
     function deployTrade() public payable returns (address) {
+     
         require(msg.value >= deploymentFee, "Insufficient fee");
 
         Trade newTrade = new Trade(msg.sender);

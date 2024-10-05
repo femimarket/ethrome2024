@@ -25,7 +25,7 @@ export default function TradingTest() {
     const handleBrokerChange = (value: string) => {
     setBroker(value)
   }
-    const factoryContractAddress = '0x16293836D97B2836e8fcfdD4529c596ff5dC6581'
+    const factoryContractAddress = '0xfa59d3522F5158cdE0D4d5a3A6bA710CC6eC9a3b'
     const router = useRouter()
     const { connectors, connect, status, error } = useConnect()
 

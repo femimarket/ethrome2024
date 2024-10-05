@@ -22,24 +22,7 @@ export const tradeAbi = [
     type: 'function',
     inputs: [
       { name: 'asset', internalType: 'string', type: 'string' },
-      {
-        name: 'qty',
-        internalType: 'struct inEuint32',
-        type: 'tuple',
-        components: [
-          { name: 'data', internalType: 'bytes', type: 'bytes' },
-          { name: 'securityZone', internalType: 'int32', type: 'int32' },
-        ],
-      },
-      {
-        name: 'buy',
-        internalType: 'struct inEbool',
-        type: 'tuple',
-        components: [
-          { name: 'data', internalType: 'bytes', type: 'bytes' },
-          { name: 'securityZone', internalType: 'int32', type: 'int32' },
-        ],
-      },
+      { name: '_qty', internalType: 'uint32', type: 'uint32' },
     ],
     name: 'addTrade',
     outputs: [],
@@ -65,9 +48,9 @@ export const tradeAbi = [
     name: 'trades',
     outputs: [
       { name: 'price', internalType: 'uint32', type: 'uint32' },
-      { name: 'qty', internalType: 'euint32', type: 'uint256' },
-      { name: 'entry', internalType: 'euint32', type: 'uint256' },
-      { name: 'pl', internalType: 'int32', type: 'int32' },
+      { name: 'qty', internalType: 'uint32', type: 'uint32' },
+      { name: 'entry', internalType: 'uint32', type: 'uint32' },
+      { name: 'pl', internalType: 'uint32', type: 'uint32' },
       { name: 'timestamp', internalType: 'uint256', type: 'uint256' },
       { name: 'buy', internalType: 'ebool', type: 'uint256' },
       { name: 'init', internalType: 'bool', type: 'bool' },

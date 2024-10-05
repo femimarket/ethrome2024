@@ -46,7 +46,7 @@ export default function RootLayout(props: { children: ReactNode }) {
   )
   return (
     <html lang="en">
-      <body  className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body  className={` antialiased`}>
         <Providers initialState={initialState}>{props.children}</Providers>
       </body>
     </html>

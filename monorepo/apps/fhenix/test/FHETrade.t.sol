@@ -62,7 +62,7 @@ contract TradeTest is Test, FheEnabled {
       // @dev Failing test for mintEncrypted function with unauthorized minter
     function testTradeOwner() public {
         vm.startPrank(owner);
-        trade.addPrice("EUR_USD", encrypt32(10000));
+        trade.addPrice("EUR_USD", 100000);
         //trade.addTrade("EUR_USD", encrypt128(100000), encryptBool(1));
         //trade.addPrice("EUR_USD", 20000);
         //trade.addTrade("EUR_USD", encrypt128(10), encryptBool(0));

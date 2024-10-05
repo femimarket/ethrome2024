@@ -51,33 +51,33 @@ export class OandaService {
 
     oandaApiKey = this.configService.get<string>('OANDA_API_KEY');
 
-    async oandaAccountSummary(account:string): Promise<Summary> {
+    // async oandaAccountSummary(account:string): Promise<Summary> {
     
-        const url = `https://api-fxpractice.oanda.com/v3/accounts/${oandaAccount}/summary`;
+    //     const url = `https://api-fxpractice.oanda.com/v3/accounts/${oandaAccount}/summary`;
     
-        try {
-          const response = await firstValueFrom(this.httpService.get(url, {
-            headers: {
-              Authorization: `Bearer ${this.oandaApiKey}`,
-            },
-          }));
+    //     try {
+    //       const response = await firstValueFrom(this.httpService.get(url, {
+    //         headers: {
+    //           Authorization: `Bearer ${this.oandaApiKey}`,
+    //         },
+    //       }));
     
-          const account = response.data.account;
-          const pl = parseFloat(account.pl);
-          const balance = parseFloat(account.balance);
+    //       const account = response.data.account;
+    //       const pl = parseFloat(account.pl);
+    //       const balance = parseFloat(account.balance);
     
-          return {
-            pl,
-            balance,
-          };
-        } catch (error) {
-          if (error instanceof AxiosError) {
-            console.error(`${error.response?.data} ${error.config?.url}`);
-            throw new HttpException('Oanda API error', HttpStatus.BAD_REQUEST);
-          }
-          throw new HttpException('Unexpected error', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-      }
+    //       return {
+    //         pl,
+    //         balance,
+    //       };
+    //     } catch (error) {
+    //       if (error instanceof AxiosError) {
+    //         console.error(`${error.response?.data} ${error.config?.url}`);
+    //         throw new HttpException('Oanda API error', HttpStatus.BAD_REQUEST);
+    //       }
+    //       throw new HttpException('Unexpected error', HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    //   }
 
     async fetchHlocvOanda(instrument: Instrument, from: number, to: number): Promise<Tick[]> {
         const instrumentStr = fromInstrument(instrument);

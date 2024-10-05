@@ -14,8 +14,9 @@ import { parseEther } from "viem"
 import Chart from "./chart"
 import { SeriesMarker, Time, UTCTimestamp } from "lightweight-charts"
 import { useRouter } from "next/navigation"
-import { FhenixClient } from 'fhenixjs';
-import { BrowserProvider } from 'ethers';
+import { BrowserProvider, JsonRpcProvider } from 'ethers';
+import { FheMath } from "@/lib/utils"
+import {EncryptionTypes, FhenixClient} from "fhenixjs"
 
 
 export interface SupportedProvider {
@@ -25,11 +26,7 @@ export interface SupportedProvider {
   getSigner?(addressOrIndex?: string | number): Promise<unknown>;
 }
 
-const provider = new BrowserProvider(window.ethereum);
-const fhenixClient = new FhenixClient({provider:{
-  request: window.ethereum.request,
-  getSigner: window.ethereum.send("eth_requestAccounts", []),
-}});
+
 
 
 
@@ -142,6 +139,7 @@ export default function TradingView() {
   const client = usePublicClient()
   const walletClient = useWalletClient()
   const [side, setSide] = useState("buy")
+  const [qty, setQty] = useState(0)
   const [selectedPair, setSelectedPair] = useState("BTC/USD")
   const [markers, setMarkers] = useState<SeriesMarker<Time>[]>([])
   const account = useAccount()
@@ -151,6 +149,7 @@ export default function TradingView() {
   const result = useSimulateContract()
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [tick, setTick] = useState<{ time: UTCTimestamp; value: number }|undefined>(undefined);
+  const [time, setTime] = useState<UTCTimestamp|undefined>(undefined);
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
   const router = useRouter()
   const ticks =  [
@@ -171,7 +170,6 @@ export default function TradingView() {
     setSelectedPair(newPair)
   }
 
-  const factoryContractAddress = '0xBEabf0cc91baB05CD78933312035A186307687e4'
 
 
   useEffect(() => {
@@ -188,6 +186,16 @@ export default function TradingView() {
     setMarkers(_markers)
   }, [])
 
+
+  useEffect(() => {
+    if (!!writeError) {
+      console.log("writeError", writeError);
+     const _markers = markers
+     _markers.pop();
+     setMarkers(_markers)
+    }
+  }, [writeError])
+
   useWatchContractEvent({
     address: tradeAddress,
     abi:tradeAbi,
@@ -196,15 +204,9 @@ export default function TradingView() {
     onLogs(logs) {
       logs.forEach((log) => {
         const time = new Date().valueOf()/1000 as UTCTimestamp;
-        setTick({time, value: log.args.price!!})
-        const _markers = markers
-        _markers.push({
-          time,
-          position: side === "Buy" ? 'belowBar' : "aboveBar",
-          color: side === "Buy" ? 'green' : "red",
-          shape: 'circle',
-        });
-        setMarkers(_markers)
+        setTick({time, value: FheMath.toInt(log.args.price!!)})
+        setTime(time)
+      
         console.log('New Tick!', log)
       })
     },
@@ -214,14 +216,7 @@ export default function TradingView() {
   })
   
 
-  const deployContract = async () => {
-    writeContract({
-      abi:tradeFactoryAbi,
-      address: factoryContractAddress,
-      functionName: 'deployTrade',
-      value: parseEther("0.1"),
-    }); 
-  }
+
 
   const ret = useReadContract({
     abi:tradeAbi,
@@ -230,14 +225,32 @@ export default function TradingView() {
     args: ['EUR_USD'],
   }); 
 
-  const marketOrder = async () => {
-    // writeContract({
-    //   abi:tradeAbi,
-    //   address: tradeAddress!!,
-    //   functionName: 'addTrade',
-    //   args: ["EUR_USD", 22],
-    // }); 
 
+  const marketOrder = async () => {
+    console.log("marketOrder", FheMath.fromInt(111), FheMath.toInt(FheMath.fromInt(111)))
+    // const _markers = markers
+    // _markers.push({
+    //   time:time!!,
+    //   position: side === "Buy" ? 'belowBar' : "aboveBar",
+    //   color: side === "Buy" ? 'green' : "red",
+    //   shape: 'circle',
+    // });
+    // setMarkers(_markers)
+    // const { FhenixClient } = await (eval(`import('fhenixjs')`) as Promise<typeof import('fhenixjs')>);
+    const provider = new BrowserProvider(window.ethereum);
+
+const fhenixClient = new FhenixClient({ provider });
+let encrypted = await client.encrypt(5, EncryptionTypes.uint8);
+
+console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))])
+    writeContract({
+      abi:tradeAbi,
+      address: tradeAddress!!,
+      functionName: 'addTrade',
+      args: ["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))],
+    }); 
+
+    setQty(0);
   }
 
   const getPl = async () => {
@@ -389,7 +402,7 @@ export default function TradingView() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="amount">Qty</Label>
-                    <Input id="amount" type="number" placeholder="0" step="1" />
+                    <Input id="amount" type="number" placeholder="0" step="1" onChange={(e) => setQty(Number(e.target.value))} />
                   </div>
                   <Button className="w-full" onClick={marketOrder}>Place Market Order</Button>
                 </div>

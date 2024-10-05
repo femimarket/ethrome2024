@@ -3,19 +3,19 @@ pragma solidity ^0.8.25;
 
 import "@fhenixprotocol/contracts/FHE.sol";
 import { console } from "forge-std/src/console.sol";
-import { FheMath } from "./FHEMath.sol";
+import { Math } from "./Math.sol";
 
 contract Trade {
-    using FheMath for euint32;
+    using Math for eint64;
 
-    event NewTick(string asset, uint32 price);
+    event NewTick(string asset, int64 price);
 
     address public owner;
     struct TradeInfo {
-        uint32 price;
-        euint32 qty;
-        euint32 entry;
-        euint32 pl;
+        int64 price;
+        int64 qty;
+        int64 entry;
+        int64 pl;
         uint256 timestamp;
         ebool buy;
         bool init;
@@ -32,52 +32,44 @@ contract Trade {
     }
 
     function getPl(string memory asset) public view returns (int32) {
-        return FheMath.toInt(trades[asset].pl);
+        return Math.toInt(trades[asset].pl);
     }
 
     
 
-    function addPrice(string memory asset, uint32 price) public {
+    function addPrice(string memory asset, int64 price) public {
         
         TradeInfo storage trade =  trades[asset];
+
+        emit NewTick(asset, price);
 
         trade.price = price;
         trade.timestamp = block.timestamp;
 
-        emit NewTick(asset, trade.price);
         
         if (trade.init == true) {
-            euint32 eprice = FHE.asEuint32(price);
-
-            euint32 epl = FheMath.mul(FheMath.sub(eprice,trade.entry),trade.qty);
-            trade.pl =  epl;
-
-            //euint32 encryptedNewQty = trade.qty.add(eqty);
-            //trade.qty = encryptedNewQty;
-
-            //trade.entry = encryptedEntry;
+            int64 pl = (price - trade.entry)*trade.qty;
+            trade.pl =  pl;
         }
     }
 
-    function addTrade(string memory asset, inEuint32 calldata qty, inEbool calldata buy) public onlyOwner {
+    function addTrade(string memory asset, int64 _qty) public {
          
         TradeInfo storage trade =  trades[asset];
    
         if (trade.timestamp == 0) {
             revert("Asset not initialized.");
         }
-
-        ebool isBuy = FHE.asEbool(buy).eq(FHE.asEbool(true));
-        euint32 eqty = FHE.select(isBuy, FHE.asEuint32(qty), FheMath.negate(FHE.asEuint32(qty)));
+     
+        int64 qty = _qty;
 
         if (trade.init == false) {
-            trade.qty = FHE.asEuint32(qty);
+            trade.qty = qty;
             trade.init = true;
-            
         } else {
-            euint32 epl = FheMath.mul(FheMath.sub(trade.price,trade.entry),trade.qty);
-            trade.pl = FheMath.add(trade.pl,epl);
-            trade.qty = FheMath.add(trade.qty,eqty);
+            int64 pl = (trade.price - trade.entry) * trade.qty;
+            trade.pl = trade.pl + pl;
+            trade.qty = trade.qty + qty;
         }
 
         trade.entry = trade.price;

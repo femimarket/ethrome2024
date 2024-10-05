@@ -14,7 +14,8 @@ import { ArrowUpRight, AlertCircle, FileUp, PlayCircle, DollarSign, Code2, Check
 import TransgateConnect from "@zkpass/transgate-js-sdk"
 import { tradeFactoryAbi } from "@/generated"
 import { useRouter } from "next/navigation"
-import { useWatchContractEvent } from "wagmi"
+import { useConnect, useWatchContractEvent, useWriteContract } from "wagmi"
+import { parseEther } from "viem"
 
 
 export default function TradingPlatform() {
@@ -30,7 +31,10 @@ export default function TradingPlatform() {
   const [verificationStatus, setVerificationStatus] = useState<"idle" | "success" | "failed">("idle")
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
   const router = useRouter()
-  const factoryContractAddress = '0x16293836D97B2836e8fcfdD4529c596ff5dC6581'
+  const { connectors, connect, status, error } = useConnect()
+  const { data: hash, writeContract, error: writeError } = useWriteContract()
+
+  const factoryContractAddress = '0xAE18c5F9f497EDD2e1DD55dA4c97E474a2c79E5F'
 
 
   // Create the connector instance
@@ -47,8 +51,29 @@ export default function TradingPlatform() {
   }
 
   const handleStartTest = () => {
-    console.log("Starting test...")
-    // Implement test start logic here, including fee payment
+    const connector = connectors.find((connector) => connector.name == "MetaMask");
+    if (!!connector) {
+        connect({
+            connector,
+        }, {
+            onSuccess(data) {
+
+            },
+            onError(error) {
+                console.log("Error connecting to MetaMask", error)
+            },
+            onSettled(data, error) {
+                writeContract({
+                    abi: tradeFactoryAbi,
+                    address: factoryContractAddress,
+                    functionName: 'deployTrade',
+                    value: parseEther("0.1"),
+                });
+            }
+        })
+    } else {
+        console.log("MetaMask connector not found");
+    }
   }
 
   useEffect(() => {

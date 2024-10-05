@@ -124,6 +124,7 @@ export default function TradingView() {
   const walletClient = useWalletClient()
   const [side, setSide] = useState("buy")
   const [selectedPair, setSelectedPair] = useState("BTC/USD")
+  const [markers, setMarkers] = useState([])
   const account = useAccount()
   const { connectors, connect, status, error } = useConnect()
   const { disconnect } = useDisconnect()
@@ -196,6 +197,17 @@ export default function TradingView() {
     args: ['EUR_USD'],
   }); 
 
+  const marketOrder = async () => {
+    const _markers = markers
+    _markers.push({
+      time: new Date().valueOf()/1000 as UTCTimestamp,
+      position: side === "Buy" ? 'belowBar' : "aboveBar",
+      color: side === "Buy" ? 'green' : "red",
+      shape: 'circle',
+    } as SeriesMarker<Time>) ;
+    setMarkers(_markers)
+
+  }
 
   const getPl = async () => {
     console.log("getPl")
@@ -348,7 +360,7 @@ export default function TradingView() {
                     <Label htmlFor="amount">Qty</Label>
                     <Input id="amount" type="number" placeholder="0" step="1" />
                   </div>
-                  <Button className="w-full">Place Market Order</Button>
+                  <Button className="w-full" onClick={marketOrder}>Place Market Order</Button>
                 </div>
               </TabsContent>
               <TabsContent value="limit">

@@ -2,6 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+
+Run Cargo 
+
+cargo run -r --example server
+
+
+and Run wholle project
+
+npm run dev
+
+
+
 First, run the development server:
 
 ```bash

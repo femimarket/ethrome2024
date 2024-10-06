@@ -35,7 +35,7 @@ export default function TradingPlatform() {
   const { connectors, connect, status, error } = useConnect()
   const { data: hash, writeContract, error: writeError } = useWriteContract()
 
-  const factoryContractAddress = '0xb8F30164C4D1f62155F7a1115E68e605069689E4'
+  const factoryContractAddress = '0x42Cec64466fB0B23B9F996819CDd28d17bf4527B'
 
 
   // Create the connector instance
@@ -116,19 +116,20 @@ export default function TradingPlatform() {
   const handleVerify = async () => {
     setIsVerifying(true)
     // Simulating verification process
-    const web3Provider = (window as any).ethereum;
+    // const web3Provider = (window as any).ethereum;
     
-    // Instantiate using the umbrella module for full functionality
-    const dataProtector = new IExecDataProtector(web3Provider);
+    // // Instantiate using the umbrella module for full functionality
+    // const dataProtector = new IExecDataProtector(web3Provider);
 
-    const dataProtectorCore = dataProtector.core;
-    const dataProtectorSharing = dataProtector.sharing;
+    // const dataProtectorCore = dataProtector.core;
+    // const dataProtectorSharing = dataProtector.sharing;
 
 
     // Check if the TransGate extension is installed
     // If it returns false, please prompt to install it from chrome web store
-    // const isAvailable = await transgate.isTransgateAvailable()
-    // const res = await transgate.launch("8605e120b1b6475aa0a36de88228d727")
+    const isAvailable = await transgate.isTransgateAvailable()
+    const res = await transgate.launch("37421346fd364f9f91c9124fea2a6903")
+    console.log(res)
     // const response = await fetch("http://localhost:9000/prove-oanda", {
     //   method: "POST",
     //   headers: {

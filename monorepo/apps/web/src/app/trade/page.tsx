@@ -135,6 +135,8 @@ export default function TradingView() {
   const [ticks, setTicks] = useState<{ time: UTCTimestamp; value: number }[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [pl, setPl] = useState<number>(0);
+  const [tpl, setTpl] = useState<number>(0);
+  const [isTrading, setIsTrading] = useState<boolean|undefined>(undefined);
   const [time, setTime] = useState<UTCTimestamp|undefined>(undefined);
   const [pendingTrade, setPendingTrade] = useState<boolean>(false);
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
@@ -146,8 +148,21 @@ export default function TradingView() {
     functionName: 'getPl',
     args: ['EUR_USD'],
   }); 
-  
 
+  const _tpl = useReadContract({
+    abi:tradeAbi,
+    address: tradeAddress as `0x${string}` | undefined,
+    functionName: 'getTpl',
+    args: ['EUR_USD'],
+  }); 
+
+  const _isTrading = useReadContract({
+    abi:tradeAbi,
+    address: tradeAddress as `0x${string}` | undefined,
+    functionName: 'isTrading',
+    args: ['EUR_USD'],
+  }); 
+  
   // Handler for changing the trading pair
   const handlePairChange = (newPair: string) => {
     setSelectedPair(newPair)
@@ -215,7 +230,6 @@ const eurUsdTradingHistory = trades.map((trade) => {
 
 
 
-  console.log("ticks", ticks)
 
   useEffect(() => {
     if (pendingTrade && !!time) {
@@ -253,9 +267,25 @@ const eurUsdTradingHistory = trades.map((trade) => {
       setPl(p-l)
     }
   }, [_pl.data])
+  useEffect(() => {
+    if (!!_tpl.data) {
+      const p = _tpl.data[0];
+      const l = _tpl.data[1];
+      setTpl(p-l)
+    }
+  }, [_tpl.data])
+
+  useEffect(() => {
+    if (!!_isTrading.data) {
+      setIsTrading(_isTrading.data)
+    }
+  }, [_isTrading.data])
 
 
   console.log("pl you", pl)
+  console.log("tpl you", tpl)
+  console.log("isTrading", _isTrading.data)
+  console.log("ticks", ticks)
 
   // useEffect(() => {
   //   if (!!writeError) {
@@ -280,6 +310,8 @@ const eurUsdTradingHistory = trades.map((trade) => {
         localStorage.setItem("ticks", JSON.stringify(_ticks))
         setTime(time)
         _pl.refetch()
+        _tpl.refetch()
+        _isTrading.refetch()
         console.log('New Tick!', log)
       })
     },
@@ -328,7 +360,7 @@ console.log("tx", tx)
 
 
 
-  console.log("hash", hash,writeError)
+  console.log("hash", hash,writeError,isTrading)
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
        
@@ -409,6 +441,9 @@ console.log("tx", tx)
                 <div className={`text-2xl font-bold ${pl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   ${Number(pl).toFixed(2)}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Realized: ${pl.toFixed(2)} | Unrealized: ${tpl.toFixed(2)}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -439,7 +474,10 @@ console.log("tx", tx)
                     <Label htmlFor="amount">Qty</Label>
                     <Input id="amount" type="number" placeholder="0" step="1" onChange={(e) => setQty(Number(e.target.value))} />
                   </div>
-                  <Button className="w-full" onClick={marketOrder}>Place Market Order</Button>
+                  {!isTrading || isTrading === undefined ? 
+                    <Button className="w-full" onClick={marketOrder} disabled={isTrading !== undefined && isTrading}>Enter Market Order</Button> : 
+                    <Button className="w-full" onClick={marketOrder} disabled={!isTrading}>Exit Market Order</Button>
+                  }
                 </div>
               </TabsContent>
               <TabsContent value="limit">

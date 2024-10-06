@@ -88,7 +88,7 @@ function randomIntFromInterval(min: number, max: number) { // min and max includ
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const tradeFactoryAddress = '0xb8F30164C4D1f62155F7a1115E68e605069689E4'
+const tradeFactoryAddress = '0x42Cec64466fB0B23B9F996819CDd28d17bf4527B'
 
 @Injectable()
 export class EthService {
@@ -150,7 +150,7 @@ export class EthService {
 
 
         for await (const res of tradeAddresses.map(f => f.address as `0x${string}`).map(async (tradeAddress) => {
-            let ePrice = await this.fhenixClient.encrypt_uint32(randomIntFromInterval(10000, 20000));
+            let ePrice = await this.fhenixClient.encrypt_uint32(randomIntFromInterval(1000, 2000));
             const c = new Contract(tradeAddress as `0x${string}`, tradeAbi, this.wallet)
             // @ts-ignore
             const tx = await c.addPrice("EUR_USD", ePrice)

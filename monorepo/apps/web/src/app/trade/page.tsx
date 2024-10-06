@@ -291,13 +291,11 @@ const fhenixClient = new FhenixClient({ provider });
 let eqty = await fhenixClient.encrypt_uint32(qty);
 let ebuy = await fhenixClient.encrypt_bool(side === "buy");
 
-console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))])
 
 
 const contract = new Contract(tradeAddress as `0x${string}`, tradeAbi)
 const c = contract.connect(await provider.getSigner())
-const tx =  await c.enterTrade("EUR_USD", [ eqty.data, 1 ],BigInt(0) ,{  gasLimit: 50000000000,
-})
+const tx =  await c.enterTrade("EUR_USD", eqty,ebuy )
 console.log("tx", tx)
 
 
@@ -305,7 +303,7 @@ console.log("tx", tx)
     //   abi:tradeAbi,
     //   address: tradeAddress!!,
     //   functionName: 'enterTrade',
-    //   args: ["EUR_USD", eqty,BigInt(0)],
+    //   args: ["EUR_USD", eqty,ebuy],
     //   gas: parseGwei('200000000'), 
       
     // }); 

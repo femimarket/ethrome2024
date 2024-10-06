@@ -16,6 +16,7 @@ import { tradeFactoryAbi } from "@/generated"
 import { useRouter } from "next/navigation"
 import { useConnect, useWatchContractEvent, useWriteContract } from "wagmi"
 import { parseEther } from "viem"
+import { IExecDataProtector } from '@iexec/dataprotector';
 
 
 export default function TradingPlatform() {
@@ -34,7 +35,7 @@ export default function TradingPlatform() {
   const { connectors, connect, status, error } = useConnect()
   const { data: hash, writeContract, error: writeError } = useWriteContract()
 
-  const factoryContractAddress = '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e'
+  const factoryContractAddress = '0x3d76278b12eD405618aB335b64979A3C91445EfA'
 
 
   // Create the connector instance
@@ -53,83 +54,145 @@ export default function TradingPlatform() {
   const handleStartTest = () => {
     const connector = connectors.find((connector) => connector.name == "MetaMask");
     if (!!connector) {
-        connect({
-            connector,
-        }, {
-            onSuccess(data) {
+      connect({
+        connector,
+      }, {
+        onSuccess(data) {
 
-            },
-            onError(error) {
-                console.log("Error connecting to MetaMask", error)
-                writeContract({
-                  abi: tradeFactoryAbi,
-                  address: factoryContractAddress,
-                  functionName: 'deployTrade',
-                  value: parseEther("0.1"),
-              });
-              console.log("Deploying trade contract")
-            },
-            onSettled(data, error) {
-                writeContract({
-                    abi: tradeFactoryAbi,
-                    address: factoryContractAddress,
-                    functionName: 'deployTrade',
-                    value: parseEther("0.1"),
-                });
-            }
-        })
+        },
+        onError(error) {
+          console.log("Error connecting to MetaMask", error)
+        
+        },
+        onSettled(data, error) {
+          writeContract({
+            abi: tradeFactoryAbi,
+            address: factoryContractAddress,
+            functionName: 'deployTrade',
+            value: parseEther("0.1"),
+          });
+        }
+      })
     } else {
-        console.log("MetaMask connector not found");
+      console.log("MetaMask connector not found");
     }
   }
 
-  console.log(writeError,"writeError")
+  console.log(writeError, "writeError")
 
   useEffect(() => {
     const _tradeAddress = localStorage.getItem('tradeAddress')
     if (!!_tradeAddress) {
-        setTradeAddress(_tradeAddress as `0x${string}`)
+      setTradeAddress(_tradeAddress as `0x${string}`)
     }
-}, [])
+  }, [])
 
-useEffect(() => {
+  useEffect(() => {
     if (!!tradeAddress) {
-        router.push(`/trade?tradeAddress=${tradeAddress}`)
+      router.push(`/trade?tradeAddress=${tradeAddress}`)
     }
-}, [tradeAddress])
+  }, [tradeAddress])
 
-useWatchContractEvent({
+  useWatchContractEvent({
     address: factoryContractAddress,
     abi: tradeFactoryAbi,
     eventName: 'TradeDeployed',
     syncConnectedChain: true,
     onLogs(logs) {
-        logs.forEach((log) => {
-            const _tradeAddress = log.args.deployedAddress
-            if (!!_tradeAddress) {
-                setTradeAddress(_tradeAddress)
-                localStorage.setItem('tradeAddress', _tradeAddress)
-            }
-            console.log('New logs!', log)
-        })
+      logs.forEach((log) => {
+        const _tradeAddress = log.args.deployedAddress
+        if (!!_tradeAddress) {
+          setTradeAddress(_tradeAddress)
+          localStorage.setItem('tradeAddress', _tradeAddress)
+        }
+        console.log('New logs!', log)
+      })
     },
     onError(error) {
-        console.log('Error!', error)
+      console.log('Error!', error)
     }
-})
+  })
 
-  const     handleVerify = async () => {
+  const handleVerify = async () => {
     setIsVerifying(true)
     // Simulating verification process
+    const web3Provider = (window as any).ethereum;
+    
+    // Instantiate using the umbrella module for full functionality
+    const dataProtector = new IExecDataProtector(web3Provider);
 
-  
+    const dataProtectorCore = dataProtector.core;
+    const dataProtectorSharing = dataProtector.sharing;
+
 
     // Check if the TransGate extension is installed
     // If it returns false, please prompt to install it from chrome web store
-    const isAvailable = await transgate.isTransgateAvailable()
-    const res = await transgate.launch("8605e120b1b6475aa0a36de88228d727")
+    // const isAvailable = await transgate.isTransgateAvailable()
+    // const res = await transgate.launch("8605e120b1b6475aa0a36de88228d727")
+    // const response = await fetch("http://localhost:9000/prove-oanda", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     "url": "https://api-fxpractice.oanda.com/v3/accounts/101-004-5845779-004/trades",
+    //     "secret": "3487192cc456d1584a5ba92ebc2692bf-bffe1410087f02fa96fbb13df93d2b59"
+    //   })
+    // }).then(res => res.json())
 
-    console.log(res,212)
+
+    // console.log(response)
+    
+
+    const protectedData = await dataProtectorCore.protectData({
+      data: {
+        file: 'example@gmail.com',
+      },
+    });
+    const listProtectedData = await dataProtectorCore.getProtectedData({
+      requiredSchema: {
+        file: 'string',
+      },
+    });
+    const processProtectedDataResponse = await dataProtectorCore.processProtectedData({
+    protectedData: protectedData.address,
+    app: '0x43a3bd53f5ac71d0626199fb8a11b294256dd009',
+    maxPrice: 10,
+   
+  });
+    console.log(processProtectedDataResponse)
+
+    // const protectData = async () => {
+    //   const createCollectionResult = await dataProtectorSharing.createCollection();
+
+      
+    //   const { txHash } = await dataProtectorSharing.addToCollection({
+    //     protectedData: protectedData.address,
+    //     collectionId: createCollectionResult.collectionId,
+    //     addOnlyAppWhitelist: '0x256bcd881c33bdf9df952f2a0148f27d439f2e64',
+    //   });
+    //   const setToSubscriptionResult =
+    //     await dataProtectorSharing.setProtectedDataToSubscription({
+    //       protectedData: protectedData.address,
+    //     });
+    //   await dataProtectorSharing.subscribeToCollection({
+    //     collectionId: createCollectionResult.collectionId,
+    //     price: 0, // 1 nRLC
+    //     duration: 60 * 60 * 24 * 365, // 172,800 sec = 2 days
+    //   });
+    //   console.log(protectedData, 2233);
+     
+    //   console.log(listProtectedData, 111);
+    //   const consumeProtectedDataResult =
+    //     await dataProtectorSharing.consumeProtectedData({
+    //       protectedData: protectedData.address,
+    //       app: '0x1cb7D4F3FFa203F211e57357D759321C6CE49921',
+    //     });
+    //   console.log(consumeProtectedDataResult, 444);
+    //   return protectedData;
+    // }
+
+
 
 
     await new Promise(resolve => setTimeout(resolve, 2000))
@@ -149,7 +212,7 @@ useWatchContractEvent({
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <h1 className="text-3xl font-bold mb-6">Proof of Profit Trading Protocol</h1>
-      
+
       <Alert className="mb-6">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Welcome to our Proof of Profit platform!</AlertTitle>
@@ -226,11 +289,11 @@ useWatchContractEvent({
                     </SelectContent>
                   </Select>
                 </div>
-            
+
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleVerify} className="w-full" disabled={ isVerifying}>
+              <Button onClick={handleVerify} className="w-full" disabled={isVerifying}>
                 {isVerifying ? (
                   <>
                     <ArrowUpRight className="mr-2 h-4 w-4 animate-spin" /> Verifying...

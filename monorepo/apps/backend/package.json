@@ -33,7 +33,7 @@
     "axios": "^1.7.7",
     "decimal.js": "^10.4.3",
     "ethers": "^6.13.2",
-    "fhenixjs": "^0.4.0-alpha.6",
+    "fhenixjs": "0.2.1",
     "moment": "^2.30.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

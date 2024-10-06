@@ -2,104 +2,208 @@
 // Trade
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export const tradeAbi = [
+export const tradeAbi =  [
   {
-    type: 'constructor',
-    inputs: [{ name: '_owner', internalType: 'address', type: 'address' }],
-    stateMutability: 'nonpayable',
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    type: 'function',
-    inputs: [
-      { name: 'asset', internalType: 'string', type: 'string' },
+    "anonymous": false,
+    "inputs": [
       {
-        name: 'price',
-        internalType: 'struct inEuint32',
-        type: 'tuple',
-        components: [
-          { name: 'data', internalType: 'bytes', type: 'bytes' },
-          { name: 'securityZone', internalType: 'int32', type: 'int32' },
+        "indexed": false,
+        "internalType": "string",
+        "name": "asset",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "price",
+        "type": "uint32"
+      }
+    ],
+    "name": "NewTick",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "asset",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
         ],
-      },
+        "internalType": "struct inEuint32",
+        "name": "price",
+        "type": "tuple"
+      }
     ],
-    name: 'addPrice',
-    outputs: [],
-    stateMutability: 'nonpayable',
+    "name": "addPrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    type: 'function',
-    inputs: [
-      { name: 'asset', internalType: 'string', type: 'string' },
+    "inputs": [
       {
-        name: '_qty',
-        internalType: 'struct inEuint32',
-        type: 'tuple',
-        components: [
-          { name: 'data', internalType: 'bytes', type: 'bytes' },
-          { name: 'securityZone', internalType: 'int32', type: 'int32' },
+        "internalType": "string",
+        "name": "asset",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
         ],
+        "internalType": "struct inEuint32",
+        "name": "_qty",
+        "type": "tuple"
       },
-      { name: '_buy', internalType: 'ebool', type: 'uint256' },
-    ],
-    name: 'enterTrade',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: 'asset', internalType: 'string', type: 'string' }],
-    name: 'exitTrade',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: 'asset', internalType: 'string', type: 'string' }],
-    name: 'getPl',
-    outputs: [
-      { name: '', internalType: 'euint32', type: 'uint256' },
-      { name: '', internalType: 'euint32', type: 'uint256' },
-    ],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'owner',
-    outputs: [{ name: '', internalType: 'address', type: 'address' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: '', internalType: 'string', type: 'string' }],
-    name: 'trades',
-    outputs: [
-      { name: 'price', internalType: 'euint32', type: 'uint256' },
-      { name: 'qty', internalType: 'euint32', type: 'uint256' },
-      { name: 'entry', internalType: 'euint32', type: 'uint256' },
-      { name: 'p', internalType: 'euint32', type: 'uint256' },
-      { name: 'l', internalType: 'euint32', type: 'uint256' },
-      { name: 'tp', internalType: 'euint32', type: 'uint256' },
-      { name: 'tl', internalType: 'euint32', type: 'uint256' },
-      { name: 'timestamp', internalType: 'uint256', type: 'uint256' },
-      { name: 'buy', internalType: 'ebool', type: 'uint256' },
-    ],
-    stateMutability: 'view',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      { name: 'asset', internalType: 'string', type: 'string', indexed: false },
       {
-        name: 'price',
-        internalType: 'euint32',
-        type: 'uint256',
-        indexed: false,
-      },
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct inEbool",
+        "name": "_buy",
+        "type": "tuple"
+      }
     ],
-    name: 'NewTick',
+    "name": "enterTrade",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "asset",
+        "type": "string"
+      }
+    ],
+    "name": "exitTrade",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "asset",
+        "type": "string"
+      }
+    ],
+    "name": "getPl",
+    "outputs": [
+      {
+        "internalType": "euint32",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "trades",
+    "outputs": [
+      {
+        "internalType": "euint32",
+        "name": "price",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "qty",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "entry",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "p",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "l",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "tp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint32",
+        "name": "tl",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "ebool",
+        "name": "buy",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

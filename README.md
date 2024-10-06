@@ -6,6 +6,7 @@ To run fhenix blockchain - `cd apps/fhenix-hardhat-example && npm run localfheni
 
 You need to run the blockchain for the frontend and backend to work.
 
+When you deploy the smart contract you need to update factory contract address line in `eth.service.ts` in backend and `web/src/app/page.tsx` with 
 
 ------------------------
 

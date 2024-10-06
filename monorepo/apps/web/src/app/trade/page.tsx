@@ -456,7 +456,9 @@ console.log("tx", tx)
               </TabsList>
               <TabsContent value="market">
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  {isTrading !== undefined && !isTrading && (
+                    <>
+                    <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant={side === "buy" ? "default" : "outline"}
                       onClick={() => setSide("buy")}
@@ -474,6 +476,9 @@ console.log("tx", tx)
                     <Label htmlFor="amount">Qty</Label>
                     <Input id="amount" type="number" placeholder="0" step="1" onChange={(e) => setQty(Number(e.target.value))} />
                   </div>
+                    </>
+                  )}
+                  
                   {!isTrading || isTrading === undefined ? 
                     <Button className="w-full" onClick={marketOrder} disabled={isTrading !== undefined && isTrading}>Enter Market Order</Button> : 
                     <Button className="w-full" onClick={marketOrder} disabled={!isTrading}>Exit Market Order</Button>

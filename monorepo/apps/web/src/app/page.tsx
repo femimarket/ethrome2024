@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpRight, AlertCircle, FileUp, PlayCircle, DollarSign, Code2, CheckCircle2, RefreshCw } from "lucide-react"
+import { ArrowUpRight, AlertCircle, FileUp, PlayCircle, DollarSign, Code2, CheckCircle2, RefreshCw, Lock } from "lucide-react"
 import TransgateConnect from "@zkpass/transgate-js-sdk"
 import { tradeFactoryAbi } from "@/generated"
 import { useRouter } from "next/navigation"
@@ -32,6 +32,7 @@ export default function TradingPlatform() {
   const [verificationStatus, setVerificationStatus] = useState<"idle" | "success" | "failed">("idle")
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
   const router = useRouter()
+  const [redirected, setRedirected] = useState(false)
   const { connectors, connect, status, error } = useConnect()
   const { data: hash, writeContract, error: writeError } = useWriteContract()
 
@@ -88,8 +89,9 @@ export default function TradingPlatform() {
   }, [])
 
   useEffect(() => {
-    if (!!tradeAddress) {
+    if (!!tradeAddress && !redirected) {
       router.push(`/trade?tradeAddress=${tradeAddress}`)
+      setRedirected(true)
     }
   }, [tradeAddress])
 
@@ -236,7 +238,7 @@ export default function TradingPlatform() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
+                {/* <div>
                   <Label htmlFor="test-duration">Test Duration</Label>
                   <Select>
                     <SelectTrigger id="test-duration">
@@ -252,12 +254,19 @@ export default function TradingPlatform() {
                 <div>
                   <Label htmlFor="initial-capital">Initial Capital</Label>
                   <Input id="initial-capital" type="number" placeholder="Enter initial capital" />
-                </div>
+                </div> */}
                 <Alert>
                   <DollarSign className="h-4 w-4" />
                   <AlertTitle>Test Fee</AlertTitle>
                   <AlertDescription>
                     This test requires a fee of ${testFee}. The fee covers smart contract deployment and price feed integration.
+                  </AlertDescription>
+                </Alert>
+                <Alert>
+                  <Lock className="h-4 w-4" />
+                  <AlertTitle>Privacy Guaranteed</AlertTitle>
+                  <AlertDescription>
+                    Your trading activity is privatized, preventing front-running and back-running. Only users you grant access to can see your activity.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -410,9 +419,15 @@ export default function TradingPlatform() {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-4">
-            <AccordionTrigger>How can investors participate?</AccordionTrigger>
+            <AccordionTrigger>How is my trading activity kept private?</AccordionTrigger>
             <AccordionContent>
-              Investors can prove their capital by verifying their broker account with a minimum balance of $100,000. Once verified, they can invest in traders who have successfully demonstrated their profitability through our platform.
+              All trading activity on our platform is privatized, preventing front-running and back-running. Only users you explicitly grant access to can see your activity. The blockchain is used to compute profitability in a trustless manner, ensuring transparency without compromising privacy.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-5">
+            <AccordionTrigger>How do zero-knowledge proofs work in this platform?</AccordionTrigger>
+            <AccordionContent>
+              Zero-knowledge proofs are used when importing trading history and proving investor capital. This technology allows us to verify the authenticity and accuracy of your trading history or account balance without actually seeing the raw data. This ensures that your sensitive information remains private while still allowing us to confirm your profitability or liquidity.
             </AccordionContent>
           </AccordionItem>
         </Accordion>

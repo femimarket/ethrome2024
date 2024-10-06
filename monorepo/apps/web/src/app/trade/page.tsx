@@ -134,10 +134,18 @@ export default function TradingView() {
   const [tick, setTick] = useState<{ time: UTCTimestamp; value: number }|undefined>(undefined);
   const [ticks, setTicks] = useState<{ time: UTCTimestamp; value: number }[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [pl, setPl] = useState<number>(0);
   const [time, setTime] = useState<UTCTimestamp|undefined>(undefined);
   const [pendingTrade, setPendingTrade] = useState<boolean>(false);
   const [tradeAddress, setTradeAddress] = useState<`0x${string}` | undefined>(undefined)
   const router = useRouter()
+
+  const _pl = useReadContract({
+    abi:tradeAbi,
+    address: tradeAddress as `0x${string}` | undefined,
+    functionName: 'getPl',
+    args: ['EUR_USD'],
+  }); 
   
 
   // Handler for changing the trading pair
@@ -238,6 +246,16 @@ const eurUsdTradingHistory = trades.map((trade) => {
     }
   }, [pendingTrade, time])
 
+  useEffect(() => {
+    if (!!_pl.data) {
+      const p = _pl.data[0];
+      const l = _pl.data[1];
+      setPl(p-l)
+    }
+  }, [_pl.data])
+
+
+  console.log("pl you", pl)
 
   // useEffect(() => {
   //   if (!!writeError) {
@@ -261,7 +279,7 @@ const eurUsdTradingHistory = trades.map((trade) => {
         _ticks.push({time, value: Number(log.args.price!!)})
         localStorage.setItem("ticks", JSON.stringify(_ticks))
         setTime(time)
-        pl.refetch()
+        _pl.refetch()
         console.log('New Tick!', log)
       })
     },
@@ -273,12 +291,7 @@ const eurUsdTradingHistory = trades.map((trade) => {
 
 
 
-  const pl = useReadContract({
-    abi:tradeAbi,
-    address: tradeAddress as `0x${string}` | undefined,
-    functionName: 'getPl',
-    args: ['EUR_USD'],
-  }); 
+  
 
 
   const marketOrder = async () => {
@@ -386,15 +399,15 @@ console.log("tx", tx)
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
-                {(pl.data || 0) >= 0 ? (
+                {pl >= 0 ? (
                   <ArrowUpIcon className="h-4 w-4 text-green-500" />
                 ) : (
                   <ArrowDownIcon className="h-4 w-4 text-red-500" />
                 )}
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${(pl.data || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  ${Number(pl.data || 0).toFixed(2)}
+                <div className={`text-2xl font-bold ${pl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  ${Number(pl).toFixed(2)}
                 </div>
               </CardContent>
             </Card>

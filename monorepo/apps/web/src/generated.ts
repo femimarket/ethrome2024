@@ -119,14 +119,14 @@ export const tradeAbi =  [
     "name": "getPl",
     "outputs": [
       {
-        "internalType": "euint32",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint256"
+        "type": "uint32"
       },
       {
-        "internalType": "euint32",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint256"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",

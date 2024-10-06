@@ -88,7 +88,7 @@ function randomIntFromInterval(min: number, max: number) { // min and max includ
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const tradeFactoryAddress = '0x3d76278b12eD405618aB335b64979A3C91445EfA'
+const tradeFactoryAddress = '0xb8F30164C4D1f62155F7a1115E68e605069689E4'
 
 @Injectable()
 export class EthService {

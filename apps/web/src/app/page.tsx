@@ -37,7 +37,7 @@ export default function TradingPlatform() {
   const { connectors, connect, status, error } = useConnect()
   const { data: hash, writeContract, error: writeError } = useWriteContract()
 
-  const factoryContractAddress = '0x42Cec64466fB0B23B9F996819CDd28d17bf4527B'
+  const factoryContractAddress = '0x525c2aBA45F66987217323E8a05EA400C65D06DC'
 
 
   // Create the connector instance
@@ -135,8 +135,8 @@ export default function TradingPlatform() {
     // Check if the TransGate extension is installed
     // If it returns false, please prompt to install it from chrome web store
     const isAvailable = await transgate.isTransgateAvailable()
-    // const res = await transgate.launch("37421346fd364f9f91c9124fea2a6903")
-    // console.log(res)
+    const res = await transgate.launch("37421346fd364f9f91c9124fea2a6903")
+    console.log(res)
     const response = await fetch("http://localhost:9000/prove-oanda", {
       method: "POST",
       headers: {

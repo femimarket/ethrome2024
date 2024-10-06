@@ -456,7 +456,7 @@ console.log("tx", tx)
               </TabsList>
               <TabsContent value="market">
                 <div className="space-y-4">
-                  {isTrading !== undefined && !isTrading && (
+                  {(isTrading === undefined || isTrading === true) && (
                     <>
                     <div className="grid grid-cols-2 gap-4">
                     <Button

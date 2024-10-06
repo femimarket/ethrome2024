@@ -27,6 +27,7 @@ export default function TradingPlatform() {
   const [testFee, setTestFee] = useState<number>(100) // Default test fee
   const [investorBroker, setInvestorBroker] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
+  const [apiKey, setApiKey] = useState("")
   const [accountBalance, setAccountBalance] = useState("")
   const [isVerifyingInvestor, setIsVerifyingInvestor] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState<"idle" | "success" | "failed">("idle")
@@ -115,6 +116,10 @@ export default function TradingPlatform() {
     }
   })
 
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKey(e.target.value)
+  }
+
   const handleVerify = async () => {
     setIsVerifying(true)
     // Simulating verification process
@@ -130,70 +135,25 @@ export default function TradingPlatform() {
     // Check if the TransGate extension is installed
     // If it returns false, please prompt to install it from chrome web store
     const isAvailable = await transgate.isTransgateAvailable()
-    const res = await transgate.launch("37421346fd364f9f91c9124fea2a6903")
-    console.log(res)
-    // const response = await fetch("http://localhost:9000/prove-oanda", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     "url": "https://api-fxpractice.oanda.com/v3/accounts/101-004-5845779-004/trades",
-    //     "secret": "3487192cc456d1584a5ba92ebc2692bf-bffe1410087f02fa96fbb13df93d2b59"
-    //   })
-    // }).then(res => res.json())
-
-
-    // console.log(response)
-    
-
-    const protectedData = await dataProtectorCore.protectData({
-      data: {
-        file: 'example@gmail.com',
+    // const res = await transgate.launch("37421346fd364f9f91c9124fea2a6903")
+    // console.log(res)
+    const response = await fetch("http://localhost:9000/prove-oanda", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    });
-    const listProtectedData = await dataProtectorCore.getProtectedData({
-      requiredSchema: {
-        file: 'string',
-      },
-    });
-    const processProtectedDataResponse = await dataProtectorCore.processProtectedData({
-    protectedData: protectedData.address,
-    app: '0x43a3bd53f5ac71d0626199fb8a11b294256dd009',
-    maxPrice: 10,
-   
-  });
-    console.log(processProtectedDataResponse)
+      body: JSON.stringify({
+        "url": "https://api-fxpractice.oanda.com/v3/accounts/101-004-5845779-004/summary",
+        "secret": apiKey
+      })
+    }).then(res => res.json())
 
-    // const protectData = async () => {
-    //   const createCollectionResult = await dataProtectorSharing.createCollection();
+    const pl = JSON.parse(response.response.split("\r\n\r\n")[2].split("\n")[0]).account.pl;
 
-      
-    //   const { txHash } = await dataProtectorSharing.addToCollection({
-    //     protectedData: protectedData.address,
-    //     collectionId: createCollectionResult.collectionId,
-    //     addOnlyAppWhitelist: '0x256bcd881c33bdf9df952f2a0148f27d439f2e64',
-    //   });
-    //   const setToSubscriptionResult =
-    //     await dataProtectorSharing.setProtectedDataToSubscription({
-    //       protectedData: protectedData.address,
-    //     });
-    //   await dataProtectorSharing.subscribeToCollection({
-    //     collectionId: createCollectionResult.collectionId,
-    //     price: 0, // 1 nRLC
-    //     duration: 60 * 60 * 24 * 365, // 172,800 sec = 2 days
-    //   });
-    //   console.log(protectedData, 2233);
-     
-    //   console.log(listProtectedData, 111);
-    //   const consumeProtectedDataResult =
-    //     await dataProtectorSharing.consumeProtectedData({
-    //       protectedData: protectedData.address,
-    //       app: '0x1cb7D4F3FFa203F211e57357D759321C6CE49921',
-    //     });
-    //   console.log(consumeProtectedDataResult, 444);
-    //   return protectedData;
-    // }
+    console.log(pl)
+
+    router.push(`/trade-history?pl=${pl}`)
+
 
 
 
@@ -299,7 +259,10 @@ export default function TradingPlatform() {
                     </SelectContent>
                   </Select>
                 </div>
-
+                <div>
+                  <Label htmlFor="initial-capital">API Key</Label>
+                  <Input id="initial-capital" type="text" placeholder="XXX" onChange={handleApiKeyChange} />
+                </div>
               </div>
             </CardContent>
             <CardFooter>
@@ -332,13 +295,11 @@ export default function TradingPlatform() {
                       <SelectValue placeholder="Select your broker" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="broker1">Broker 1</SelectItem>
-                      <SelectItem value="broker2">Broker 2</SelectItem>
-                      <SelectItem value="broker3">Broker 3</SelectItem>
+                      <SelectItem value="broker1">Oanda</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                {/* <div>
                   <Label htmlFor="account-number">Account Number</Label>
                   <Input
                     id="account-number"
@@ -346,8 +307,8 @@ export default function TradingPlatform() {
                     onChange={(e) => setAccountNumber(e.target.value)}
                     placeholder="Enter your account number"
                   />
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <Label htmlFor="account-balance">Account Balance (USD)</Label>
                   <Input
                     id="account-balance"
@@ -356,7 +317,7 @@ export default function TradingPlatform() {
                     onChange={(e) => setAccountBalance(e.target.value)}
                     placeholder="Enter your account balance"
                   />
-                </div>
+                </div> */}
                 <Alert>
                   <DollarSign className="h-4 w-4" />
                   <AlertTitle>Minimum Capital Requirement</AlertTitle>

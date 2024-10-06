@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, Save, ArrowUpRight, CheckCircle2 } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 // Mock data for imported trading history
 const mockTradingHistory = [
@@ -25,6 +26,8 @@ export default function ImportedTradingHistory() {
   const [savingToBlockchain, setSavingToBlockchain] = useState(false)
   const [savedToBlockchain, setSavedToBlockchain] = useState(false)
   const [transactionHash, setTransactionHash] = useState("")
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleTradeSelection = (tradeId: number) => {
     setSelectedTrades(prev => 
@@ -34,8 +37,46 @@ export default function ImportedTradingHistory() {
     )
   }
 
+
   const handleSaveToBlockchain = async () => {
     setSavingToBlockchain(true)
+
+
+
+    
+
+    // const protectData = async () => {
+    //   const createCollectionResult = await dataProtectorSharing.createCollection();
+
+      
+    //   const { txHash } = await dataProtectorSharing.addToCollection({
+    //     protectedData: protectedData.address,
+    //     collectionId: createCollectionResult.collectionId,
+    //     addOnlyAppWhitelist: '0x256bcd881c33bdf9df952f2a0148f27d439f2e64',
+    //   });
+    //   const setToSubscriptionResult =
+    //     await dataProtectorSharing.setProtectedDataToSubscription({
+    //       protectedData: protectedData.address,
+    //     });
+    //   await dataProtectorSharing.subscribeToCollection({
+    //     collectionId: createCollectionResult.collectionId,
+    //     price: 0, // 1 nRLC
+    //     duration: 60 * 60 * 24 * 365, // 172,800 sec = 2 days
+    //   });
+    //   console.log(protectedData, 2233);
+     
+    //   console.log(listProtectedData, 111);
+    //   const consumeProtectedDataResult =
+    //     await dataProtectorSharing.consumeProtectedData({
+    //       protectedData: protectedData.address,
+    //       app: '0x1cb7D4F3FFa203F211e57357D759321C6CE49921',
+    //     });
+    //   console.log(consumeProtectedDataResult, 444);
+    //   return protectedData;
+    // }
+
+
+
     // Simulating blockchain interaction
     await new Promise(resolve => setTimeout(resolve, 2000))
     setSavingToBlockchain(false)
@@ -43,7 +84,7 @@ export default function ImportedTradingHistory() {
     setTransactionHash("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef")
   }
 
-  const totalProfit = mockTradingHistory.reduce((sum, trade) => sum + trade.profit, 0)
+  const totalProfit = Number(searchParams.get("pl") || "0")
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -86,10 +127,10 @@ export default function ImportedTradingHistory() {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Trade History</CardTitle>
-          <CardDescription>Select trades to save to the blockchain</CardDescription>
+          <CardTitle></CardTitle>
+          {/* <CardDescription>Select trades to save to the blockchain</CardDescription> */}
         </CardHeader>
-        <CardContent>
+        {/* <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
@@ -125,7 +166,7 @@ export default function ImportedTradingHistory() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
+        </CardContent> */}
         <CardFooter>
           <Button 
             onClick={handleSaveToBlockchain} 
@@ -138,7 +179,7 @@ export default function ImportedTradingHistory() {
               </>
             ) : (
               <>
-                <Save className="mr-2 h-4 w-4" /> Save Selected Trades to Blockchain
+                <Save className="mr-2 h-4 w-4" /> Save to Blockchain
               </>
             )}
           </Button>

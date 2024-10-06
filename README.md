@@ -1,3 +1,18 @@
+To run tlsnotary service - `cd tlsn && cargo run -r --example server`
+
+To run frontend and backend - `npm run dev`
+
+To run fhenix blockchain - `cd apps/fhenix-hardhat-example && npm run localfhenix:start && npm run task:deploy`
+
+You need to run the blockchain for the frontend and backend to work.
+
+
+------------------------
+
+
+
+
+
 # Turborepo starter
 
 This is an official starter Turborepo.

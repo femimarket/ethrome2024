@@ -38,7 +38,7 @@ contract Trade {
 
     
 
-    function addPrice(string memory asset, inEuint32 calldata price) public {
+    function addPrice(string memory asset, inEuint32 memory price) public {
         
         TradeInfo storage trade =  trades[asset];
 
@@ -66,14 +66,14 @@ contract Trade {
     function enterTrade(string memory asset, inEuint32 calldata _qty, ebool _buy) public {
         TradeInfo storage trade =  trades[asset];
    
-        if (trade.timestamp == 0) {
-            revert("Asset not initialized.");
-        }
+        // if (trade.timestamp == 0) {
+        //     revert("Asset not initialized.");
+        // }
      
         euint32 qty = FHE.asEuint32(_qty);
-        trade.qty = qty;
-        trade.buy = _buy;
-        trade.entry = trade.price;
+        //trade.qty = qty;
+        //trade.buy = _buy;
+        //trade.entry = trade.price;
     }
 
 

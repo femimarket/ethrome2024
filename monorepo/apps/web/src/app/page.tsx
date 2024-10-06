@@ -34,11 +34,11 @@ export default function TradingPlatform() {
   const { connectors, connect, status, error } = useConnect()
   const { data: hash, writeContract, error: writeError } = useWriteContract()
 
-  const factoryContractAddress = '0x9F8A89f254179e3ce602869aBa821885083969A4'
+  const factoryContractAddress = '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e'
 
 
   // Create the connector instance
-  const connector = new TransgateConnect("af5b7cb0-ffcd-4ab4-bf66-d198b8641f5f")
+  const transgate = new TransgateConnect("af5b7cb0-ffcd-4ab4-bf66-d198b8641f5f")
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -61,6 +61,13 @@ export default function TradingPlatform() {
             },
             onError(error) {
                 console.log("Error connecting to MetaMask", error)
+                writeContract({
+                  abi: tradeFactoryAbi,
+                  address: factoryContractAddress,
+                  functionName: 'deployTrade',
+                  value: parseEther("0.1"),
+              });
+              console.log("Deploying trade contract")
             },
             onSettled(data, error) {
                 writeContract({
@@ -75,6 +82,8 @@ export default function TradingPlatform() {
         console.log("MetaMask connector not found");
     }
   }
+
+  console.log(writeError,"writeError")
 
   useEffect(() => {
     const _tradeAddress = localStorage.getItem('tradeAddress')
@@ -117,10 +126,10 @@ useWatchContractEvent({
 
     // Check if the TransGate extension is installed
     // If it returns false, please prompt to install it from chrome web store
-    const isAvailable = await connector.isTransgateAvailable()
-    const res = await connector.launch("b6efcd3667a9475aac19ee60e7f05808")
+    const isAvailable = await transgate.isTransgateAvailable()
+    const res = await transgate.launch("8605e120b1b6475aa0a36de88228d727")
 
-    console.log(res)
+    console.log(res,212)
 
 
     await new Promise(resolve => setTimeout(resolve, 2000))
@@ -217,17 +226,7 @@ useWatchContractEvent({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="file-upload">Upload Trading History</Label>
-                  <Input id="file-upload" type="file" onChange={handleFileChange} accept=".csv,.xlsx,.mt4,.mt5" />
-                </div>
-                {file && (
-                  <Alert>
-                    <FileUp className="h-4 w-4" />
-                    <AlertTitle>File selected</AlertTitle>
-                    <AlertDescription>{file.name}</AlertDescription>
-                  </Alert>
-                )}
+            
               </div>
             </CardContent>
             <CardFooter>

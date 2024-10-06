@@ -10,15 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 import { useAccount, useClient, useConnect, useDisconnect, usePublicClient, useSimulateContract, useWalletClient, useWatchContractEvent, useWriteContract, useReadContract } from "wagmi"
 import { tradeFactoryAbi, tradeAbi   } from "@/generated"
-import { parseEther } from "viem"
+import { parseEther, parseGwei } from "viem"
 import Chart from "./chart"
 import { SeriesMarker, Time, UTCTimestamp } from "lightweight-charts"
 import { useRouter } from "next/navigation"
-import { BrowserProvider, JsonRpcProvider } from 'ethers';
+import { BrowserProvider, JsonRpcProvider, Contract } from 'ethers';
 import { FheMath } from "@/lib/utils"
 import {EncryptionTypes, FhenixClient} from "fhenixjs"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-
 
 export interface SupportedProvider {
   request?(args: { method: string; params?: unknown[] }): Promise<unknown>;
@@ -289,15 +288,27 @@ const eurUsdTradingHistory = trades.map((trade) => {
     const provider = new BrowserProvider(window.ethereum);
 
 const fhenixClient = new FhenixClient({ provider });
-let encrypted = await fhenixClient.encrypt(5, EncryptionTypes.uint8);
+let eqty = await fhenixClient.encrypt_uint32(qty);
+let ebuy = await fhenixClient.encrypt_bool(side === "buy");
 
 console.log(["EUR_USD", side === "buy" ? FheMath.fromInt(qty) : FheMath.negate(FheMath.fromInt(qty))])
-    writeContract({
-      abi:tradeAbi,
-      address: tradeAddress!!,
-      functionName: 'addTrade',
-      args: ["EUR_USD", BigInt(qty)],
-    }); 
+
+
+const contract = new Contract(tradeAddress as `0x${string}`, tradeAbi)
+const c = contract.connect(await provider.getSigner())
+const tx =  await c.enterTrade("EUR_USD", [ eqty.data, 1 ],BigInt(0) ,{  gasLimit: 50000000000,
+})
+console.log("tx", tx)
+
+
+    // writeContract({
+    //   abi:tradeAbi,
+    //   address: tradeAddress!!,
+    //   functionName: 'enterTrade',
+    //   args: ["EUR_USD", eqty,BigInt(0)],
+    //   gas: parseGwei('200000000'), 
+      
+    // }); 
 
   }
 

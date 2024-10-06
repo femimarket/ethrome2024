@@ -6,9 +6,9 @@ import { coinbaseWallet, injected, metaMask, walletConnect } from 'wagmi/connect
 export const localFhenix = {
   id: 412346,
   name: 'LocalFhenix',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: { name: 'Ether', symbol: 'FHE', decimals: 18 },
   rpcUrls: {
-    default: { http: ['http://localhost:8547'], webSocket: ['ws://localhost:8548'] },
+    default: { http: ['http://localhost:42069'], webSocket: ['ws://localhost:42070'] },
   },
 } as const satisfies Chain
 

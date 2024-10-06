@@ -8,7 +8,7 @@ cast send --private-key 0xa3b8db7496a3b80d0142caf6c66157821590ad82ebc04707483eb6
 cast call --private-key 0xa3b8db7496a3b80d0142caf6c66157821590ad82ebc04707483eb62910f4564b --rpc-url fhenix_local 0xC10822d956777E653D4E30F90582080F7289911f "addTrade(string,uint32)" "EUR_USD" 200
 
 
-cast send --private-key 0xa3b8db7496a3b80d0142caf6c66157821590ad82ebc04707483eb62910f4564b --rpc-url fhenix_local 0x335721A3e7C3f05A89c0A037D10eeb5Ff5DA7274 "deployTrade()(address)" --value 0.1ether
+cast send --private-key 0xdef296bd0cbeb12568384f716a2c31f8b7b98f97f531ab9af723e4b46932315b --rpc-url fhenix_local 0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e "deployTrade()(address)" --value 0.1ether
  
 
 cast tx --rpc-url fhenix_local 0x48948ffe33ff42b7f9dc78ff9604dbb38c6d323dcb9b3b2166bea6859b526dd1

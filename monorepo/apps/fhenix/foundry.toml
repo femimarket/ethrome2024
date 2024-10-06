@@ -55,4 +55,4 @@
   polygon = "https://polygon-mainnet.infura.io/v3/${API_KEY_INFURA}"
   sepolia = "https://sepolia.infura.io/v3/${API_KEY_INFURA}"
   fhenix = "https://api.helium.fhenix.zone"
-  fhenix_local = "http://localhost:8547"
+  fhenix_local = "http://localhost:42069"
